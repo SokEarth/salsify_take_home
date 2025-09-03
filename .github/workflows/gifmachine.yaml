@@ -48,14 +48,14 @@ jobs:
             adapter: postgresql
             encoding: unicode
             host: 'localhost'
-            username: ${DB_USERNAME}
-            password: ${DB_PASSWORD}
+            username: 'postgres'
+            password: 'mypswd'
             pool: 5
             port: 5432
           
           test:
             <<: *default
-            database: ${DB_NAME}
+            database: 'postgres'
           EOL
 
       - name: Install dependencies
