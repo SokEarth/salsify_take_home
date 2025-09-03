@@ -92,6 +92,7 @@ jobs:
         working-directory: terraform
 
       - id: tf_output
+        name: Get db_url
         run: |
           DB_URL=$(terraform output -raw database_url)
           echo "database_url=$DB_URL" >> $GITHUB_OUTPUT
