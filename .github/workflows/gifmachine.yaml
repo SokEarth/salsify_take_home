@@ -55,6 +55,8 @@ jobs:
     name: Deploy AWS Infrastructure with Terraform
     runs-on: ubuntu-latest
     environment: gifmachine
+    outputs:
+      database_url: ${{ steps.tf_output.outputs.DATABASE_URL }}
 
     steps:
       # Checkout repo
@@ -85,6 +87,49 @@ jobs:
         working-directory: terraform
 
       # Terraform Apply
-      # - name: Terraform Apply
-      #   run: terraform apply -auto-approve tfplan
-      #   working-directory: terraform
+      - name: Terraform Apply
+        run: terraform apply -auto-approve tfplan
+        working-directory: terraform
+
+      - id: tf_output
+        run: |
+          DB_URL=$(terraform output -raw database_url)
+          echo "database_url=$DB_URL" >> $GITHUB_OUTPUT
+
+  # containerize:
+  #   runs-on: ubuntu-latest
+  #   environment: gifmachine
+  #   env:
+  #     DB_ADAPTER: ${{ secrets.DB_ADAPTER }}
+  #     DB_USERNAME: ${{ secrets.DB_USERNAME }}
+  #     DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+  #     DB_HOST:  ${{ secrets.DB_HOST }}
+  #     DB_NAME: ${{ secrets.DATABASE }}
+  #     DATABASE_URL: ${{ needs.terraform.outputs.database_url }}
+  #     RACK_ENV: ${{ secrets.RACK_ENV }}
+      
+  #   steps:
+  #     - name: Checkout repo
+  #       uses: actions/checkout@v4
+
+  #     - name: Configure AWS credentials
+  #       uses: aws-actions/configure-aws-credentials@v4
+  #       with:
+  #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #         aws-region: eu-north-1
+
+  #     - name: Log in to Amazon ECR
+  #       id: login-ecr
+  #       uses: aws-actions/amazon-ecr-login@v2
+
+  #     - name: Build and push docker image to ecr
+  #       working-directory: gifmachine
+  #       env:
+  #         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+  #         ECR_REPOSITORY: salsify-task-repo
+          
+  #         IMAGE_TAG: gitmachine-${{ github.sha }}
+  #       run: |
+  #         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+  #         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG

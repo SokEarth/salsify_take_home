@@ -5,7 +5,7 @@ resource "aws_ecr_repository" "salsify-ecr" {
   image_tag_mutability = "IMMUTABLE"
 }
 
-
+# RDS
 module "rds" {
   source = "terraform-aws-modules/rds/aws"
   version = ">=  6.12.0"
@@ -18,10 +18,7 @@ module "rds" {
   username = var.rds_username
   password = var.rds_password
   multi_az = true
-#   subnet_ids = module.vpc.database_subnets
   manage_master_user_password = true
-#   vpc_security_group_ids = [aws_security_group.rds.id]
-#   db_subnet_group_name = aws_db_subnet_group.db_subnet.name
   maintenance_window = "Mon:00:00-Mon:03:00"
   skip_final_snapshot = true
   family = var.family
@@ -56,7 +53,7 @@ locals {
 }
 
 resource "aws_secretsmanager_secret" "db_url" {
-  name = "app-database-url"
+  name = "database-app-url"
 }
 
 resource "aws_secretsmanager_secret_version" "db_url" {
@@ -70,72 +67,7 @@ resource "aws_secretsmanager_secret_version" "db_url" {
   )
 }
 
-resource "aws_iam_role" "lightsail_role" {
-  name = "lightsail-secrets-role"
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Effect = "Allow"
-      Principal = {
-        Service = "lightsail.amazonaws.com"
-      }
-      Action = "sts:AssumeRole"
-    }]
-  })
-}
-resource "aws_iam_policy" "secrets_read_policy" {
-  name = "lightsail-secrets-read"
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Effect = "Allow"
-      Action = ["secretsmanager:GetSecretValue"]
-      Resource = [
-        aws_secretsmanager_secret.db_url.arn,
-        "arn:aws:secretsmanager:eu-north-1:023520667418:secret:GIFMACHINE_PASSWORD"]
-    }]
-  })
-}
-
-resource "aws_iam_role_policy_attachment" "attach_policy" {
-  role = aws_iam_role.lightsail_role.name
-  policy_arn = aws_iam_policy.secrets_read_policy.arn
-}
-
-# Lightsail Container Service
-
-resource "aws_lightsail_container_service" "app_service" {
-  name = "app-service"
-  power = "medium"
-  scale = 1
-}
-
-resource "aws_lightsail_container_service_deployment_version" "app_deploy" {
-  service_name = aws_lightsail_container_service.app_service.name
-
-  container {
-    container_name = "app-container"
-    image = "023520667418.dkr.ecr.eu-north-1.amazonaws.com/salsify-task-repo:latest"
-    command = []
-    environment = {
-      DATABASE_URL = aws_secretsmanager_secret_version.db_url.secret_string
-      GIFMACHINE_PASSWORD = "supersecret"
-    }
-    ports = {
-      "4567" = "HTTP"
-    }
-  }
-
-  public_endpoint {
-    container_name = "app-container"
-    container_port = 4567
-    health_check {
-      healthy_threshold = 2
-      unhealthy_threshold = 2
-      timeout_seconds = 5
-      interval_seconds = 10
-      path = "/" # or /health if your app has one
-      success_codes = "200-499"
-    }
-  }
+output "database_url" {
+  value = aws_secretsmanager_secret_version.db_url.secret_string
+  sensitive = true
 }
