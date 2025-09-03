@@ -9,3 +9,7 @@ default: &default
 production:
   <<: *default
   database: <%= ENV['DB_NAME'] %>
+
+test:
+  <<: *default
+  database: <%= ENV['DB_NAME'] %>
