@@ -21,12 +21,8 @@ jobs:
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
-
+    
     env:
-      DB_ADAPTER: ${{ secrets.DB_ADAPTER }}
-      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-      DB_HOST:  'localhost'
-      DB_NAME: ${{ secrets.DATABASE }}
       RACK_ENV: test
           
     steps:
@@ -38,6 +34,25 @@ jobs:
         with:
           ruby-version: '3.4.5'
           bundler-cache: true
+
+      - name: Create config/database.yml
+        working-directory: gifmachine
+        run: |
+          mkdir -p config
+          cat > config/database.yml <<EOL
+          default: &default
+            adapter: postgresql
+            encoding: unicode
+            host: 'localhost'
+            username: ${{ secrets.USERNAME }}
+            password: ${{ secrets.DB_PASSWORD }}
+            pool: 5
+            port: 5432
+          
+          test:
+            <<: *default
+            database: ${{ secrets.DB_NAME }}
+          EOL
 
       - name: Install dependencies
         working-directory: gifmachine
