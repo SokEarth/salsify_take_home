@@ -8,6 +8,7 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
+    environment: gifmachine
     services:
       postgres:
         image: postgres:15
@@ -25,6 +26,7 @@ jobs:
     env:
       DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
       DB_USERNAME: ${{ secrets.DB_USERNAME }}
+      DB_NAME: ${{ secrets.DB_NAME }}
       RACK_ENV: test
           
     steps:
@@ -53,7 +55,7 @@ jobs:
           
           test:
             <<: *default
-            database: ${{ secrets.DB_NAME }}
+            database: ${DB_NAME}
           EOL
 
       - name: Install dependencies
