@@ -51,7 +51,6 @@ jobs:
             username: 'postgres'
             password: 'mypswd'
             pool: 5
-            port: 5432
           
           test:
             <<: *default
