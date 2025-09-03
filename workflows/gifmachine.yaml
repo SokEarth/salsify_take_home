@@ -1,0 +1,49 @@
+name: Automate gifmachine app deployment with terraform
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: runner
+          POSTGRES_PASSWORD: runner
+          POSTGRES_DB: gifmachine_tester
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd="pg_isready -U runner"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    env:
+      DB_ADAPTER: ${{ secrets.DB_ADAPTER }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      DB_HOST:  'localhost'
+      DB_NAME: ${{ secrets.DATABASE }}
+      RACK_ENV: test
+          
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.4.5'
+          bundler-cache: true
+
+      - name: Install dependencies
+        working-directory: gifmachine
+        run: bundle install
+
+      - name: Setup database
+        working-directory: gifmachine
+        run: |
+          bundle exec rake db:migrate
