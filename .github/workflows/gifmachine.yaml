@@ -24,9 +24,11 @@ jobs:
           --health-retries=5
     
     env:
-      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-      DB_USERNAME: ${{ secrets.DB_USERNAME }}
-      DB_NAME: ${{ secrets.DB_NAME }}
+      DB_ADAPTER: postgresql
+      DB_USERNAME: runner
+      DB_PASSWORD: runner
+      DB_HOST:  localhost
+      DB_NAME: gifmachine_tester
       RACK_ENV: test
           
     steps:
@@ -38,25 +40,7 @@ jobs:
         with:
           ruby-version: '3.4.5'
           bundler-cache: true
-
-      - name: Create config/database.yml
-        working-directory: gifmachine
-        run: |
-          mkdir -p config
-          cat > config/database.yml <<EOL
-          default: &default
-            adapter: postgresql
-            encoding: unicode
-            host: 'localhost'
-            username: 'postgres'
-            password: 'mypswd'
-            pool: 5
           
-          test:
-            <<: *default
-            database: 'postgres'
-          EOL
-
       - name: Install dependencies
         working-directory: gifmachine
         run: bundle install
