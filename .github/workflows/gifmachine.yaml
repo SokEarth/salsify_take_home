@@ -23,6 +23,8 @@ jobs:
           --health-retries=5
     
     env:
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      DB_USERNAME: ${{ secrets.DB_USERNAME }}
       RACK_ENV: test
           
     steps:
@@ -44,8 +46,8 @@ jobs:
             adapter: postgresql
             encoding: unicode
             host: 'localhost'
-            username: ${{ secrets.USERNAME }}
-            password: ${{ secrets.DB_PASSWORD }}
+            username: ${DB_USERNAME}
+            password: ${DB_PASSWORD}
             pool: 5
             port: 5432
           
