@@ -50,3 +50,41 @@ jobs:
         run: |
           bundle exec rake db:create
           bundle exec rake db:migrate
+  
+  terraform:
+    name: Deploy AWS Infrastructure with Terraform
+    runs-on: ubuntu-latest
+    environment: gifmachine
+
+    steps:
+      # Checkout repo
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Setup Terraform CLI
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.13.1
+
+      # Configure AWS credentials
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-north-1
+
+      - name: Terraform Init
+        run: terraform init -upgrade
+        working-directory: terraform
+
+      # Terraform Plan
+      - name: Terraform Plan
+        run: terraform plan -out=tfplan
+        working-directory: terraform
+
+      # Terraform Apply
+      # - name: Terraform Apply
+      #   run: terraform apply -auto-approve tfplan
+      #   working-directory: terraform
