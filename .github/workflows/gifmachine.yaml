@@ -40,6 +40,10 @@ jobs:
         with:
           ruby-version: '3.4.5'
           bundler-cache: true
+
+      - name: Update websocket
+        working-directory: gifmachine
+        run: bundle update em-websocket
           
       - name: Install dependencies
         working-directory: gifmachine
