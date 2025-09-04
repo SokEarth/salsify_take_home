@@ -40,10 +40,10 @@ jobs:
         with:
           ruby-version: '2.6.5'
           bundler-cache: true
-
-      - name: Update websocket
+          
+      - name: Remove old Gemlock
         working-directory: gifmachine
-        run: bundle update
+        run: rm Gemfile.lock
           
       - name: Install dependencies
         working-directory: gifmachine
