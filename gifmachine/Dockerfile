@@ -22,6 +22,9 @@ WORKDIR /app
 # Copy Gemfile first (for layer caching)
 COPY Gemfile Gemfile.lock ./
 
+# Update websocket
+RUN bundle update em-websocket
+
 # Install gems
 RUN bundle install
 
