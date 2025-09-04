@@ -43,7 +43,7 @@ jobs:
 
       - name: Update websocket
         working-directory: gifmachine
-        run: bundle update em-websocket
+        run: bundle update
           
       - name: Install dependencies
         working-directory: gifmachine
