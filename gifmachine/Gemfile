@@ -6,7 +6,7 @@ gem 'bigdecimal'
 gem 'sinatra-activerecord'
 gem 'pg'
 gem 'thin', '~> 1.8'
-gem 'sinatra-websocket'
+gem 'sinatra-websocket', github: 'sinatra/sinatra-websocket'
 gem 'json'
 gem 'will_paginate'
 gem "em-websocket", "~> 0.5"
