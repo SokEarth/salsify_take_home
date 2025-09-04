@@ -67,7 +67,59 @@ resource "aws_secretsmanager_secret_version" "db_url" {
   )
 }
 
+resource "aws_iam_role" "lightsail_role" {
+  name = "lightsail-secrets-role"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Principal = {
+        Service = "lightsail.amazonaws.com"
+      }
+      Action = "sts:AssumeRole"
+    }]
+  })
+}
+resource "aws_iam_policy" "secrets_read_policy" {
+  name = "lightsail-secrets-read"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Action = ["secretsmanager:GetSecretValue"]
+      Resource = [
+        aws_secretsmanager_secret.db_url.arn,
+        "arn:aws:secretsmanager:eu-north-1:023520667418:secret:GIFMACHINE_PASSWORD"]
+    }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "attach_policy" {
+  role = aws_iam_role.lightsail_role.name
+  policy_arn = aws_iam_policy.secrets_read_policy.arn
+}
+
 output "database_url" {
   value = aws_secretsmanager_secret_version.db_url.secret_string
+  sensitive = true
+}
+
+output "db_username" {
+  value = local.rds_creds.username
+  sensitive = true
+}
+
+output "db_password" {
+  value = local.rds_creds.password
+  sensitive = true
+}
+
+output "db_host" {
+  value = module.rds.db_instance_address
+  sensitive = true
+}
+
+output "db_name" {
+  value = module.rds.db_instance_name
   sensitive = true
 }
