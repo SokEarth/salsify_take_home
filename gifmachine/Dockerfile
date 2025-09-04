@@ -1,4 +1,4 @@
-FROM ruby:3.4.5-alpine AS builder
+FROM ruby:2.6.5-alpine AS builder
 
 # Install bundler
 RUN gem install bundler
@@ -31,7 +31,7 @@ RUN bundle install
 # Copy rest of the app
 COPY . .
 
-FROM ruby:3.4.5-alpine
+FROM ruby:2.6.5-alpine
 
 # Install dependencies
 RUN apk add --no-cache \
