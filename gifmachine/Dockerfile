@@ -23,7 +23,7 @@ WORKDIR /app
 COPY Gemfile Gemfile.lock ./
 
 # Update websocket
-RUN bundle update em-websocket
+RUN bundle update
 
 # Install gems
 RUN bundle install
