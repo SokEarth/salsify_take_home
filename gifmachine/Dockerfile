@@ -1,7 +1,7 @@
 FROM ruby:2.6.5-alpine AS builder
 
 # Install bundler
-RUN gem install bundler
+RUN gem install bundler -v "~> 2.2"
 
 # Install build dependencies
 RUN apk add --no-cache \
