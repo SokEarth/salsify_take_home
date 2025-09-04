@@ -10,6 +10,12 @@ variable "project_name" {
   default = "salsify-task"
 }
 
+variable "docker_img" {
+  description = "Project name"
+  type = string
+  default = "gitmachine-3526d67646a16929e36117f9f5974cf080c806ac"
+}
+
 variable "vpc_cidr" {
   type = string
   default = "10.0.0.0/16"
