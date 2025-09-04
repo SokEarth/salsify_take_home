@@ -133,6 +133,25 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
+      - name: Create config/database.yml
+        working-directory: gifmachine
+        run: |
+          mkdir -p config
+          cat > config/database.yml <<EOL
+          default: &default
+            adapter: postgresql
+            encoding: unicode
+            host: ${DB_HOST}
+            username: ${DB_USERNAME}
+            password: ${DB_PASSWORD}
+            pool: 5
+            port: 5432
+
+          production:
+            <<: *default
+            database: ${DB_NAME}
+          EOL
+          
       - name: Build and push docker image to ecr
         working-directory: gifmachine
         env:
@@ -141,5 +160,5 @@ jobs:
           
           IMAGE_TAG: gitmachine-${{ github.sha }}
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker build --build-arg ${RACK_ENV} ${DATABASE_URL} -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
