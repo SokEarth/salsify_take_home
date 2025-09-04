@@ -99,6 +99,44 @@ resource "aws_iam_role_policy_attachment" "attach_policy" {
   policy_arn = aws_iam_policy.secrets_read_policy.arn
 }
 
+# Lightsail Container Service
+
+resource "aws_lightsail_container_service" "app_service" {
+  name = "app-service"
+  power = "medium"
+  scale = 1
+}
+
+resource "aws_lightsail_container_service_deployment_version" "app_deploy" {
+  service_name = aws_lightsail_container_service.app_service.name
+
+  container {
+    container_name = "app-container"
+    image = var.docker_img
+    command = []
+    environment = {
+      DATABASE_URL = aws_secretsmanager_secret_version.db_url.secret_string
+      GIFMACHINE_PASSWORD = ""
+    }
+    ports = {
+      "4567" = "HTTP"
+    }
+  }
+
+  public_endpoint {
+    container_name = "app-container"
+    container_port = 4567
+    health_check {
+      healthy_threshold = 2
+      unhealthy_threshold = 2
+      timeout_seconds = 5
+      interval_seconds = 10
+      path = "/" # or /health if your app has one
+      success_codes = "200-499"
+    }
+  }
+}
+
 output "database_url" {
   value = aws_secretsmanager_secret_version.db_url.secret_string
   sensitive = true
